@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Topracon — Toprağı iyileştiren çiftçinin yanında</title>
+<meta name="description" content="Topracon, çiftçilerin onarıcı tarıma geçişini finanse eder, tarla işlemlerini uydu ve toprak analiziyle doğrular, toprakta tutulan karbonu belgeleyip kurumsal alıcıya satar. Gelirin %80'i üreticiye döner.">
+<meta property="og:title" content="Topracon — Toprağı iyileştiren çiftçinin yanında">
+<meta property="og:description" content="Onarıcı tarıma geçişi finanse ediyor, toprakta tutulan karbonu ölçüp belgeliyoruz. Konya, Karaman ve Aksaray'da kayıtlar açık.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 22 22'%3E%3Crect width='22' height='5' fill='%23D8C69A'/%3E%3Crect y='5' width='22' height='6' fill='%23A66F4F'/%3E%3Crect y='11' width='22' height='5' fill='%237A4F38'/%3E%3Crect y='16' width='22' height='6' fill='%2326342B'/%3E%3C/svg%3E">
+<meta name="theme-color" content="#26342B">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --soil:#26342B; --field:#607A55; --clay:#A66F4F; --wheat:#D8C69A;
+  --paper:#F4F1E8; --paper2:#FBF9F3; --signal:#D6A928; --alert:#8E4A32; --ink:#1C2620;
+  --line:rgba(28,38,32,.16); --line2:rgba(28,38,32,.08);
+  --disp:"Manrope","Segoe UI",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:72px}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--disp);
+  font-size:17px;line-height:1.58;-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{margin:0;font-weight:800;letter-spacing:-.025em;line-height:1.12}
+h1{font-size:clamp(2.3rem,6vw,4.1rem);letter-spacing:-.04em;line-height:1.03}
+h2{font-size:clamp(1.7rem,4vw,2.5rem);letter-spacing:-.03em}
+h3{font-size:1.2rem}
+p{margin:0 0 1em}
+a{color:inherit}
+svg{max-width:100%}
+button{font:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--field);outline-offset:2px;border-radius:3px}
+.mono{font-family:var(--mono);font-feature-settings:"tnum" 1}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+.wrap{max-width:1120px;margin:0 auto;padding:0 22px}
+.narrow{max-width:780px;margin:0 auto;padding:0 22px}
+
+header.top{position:sticky;top:0;z-index:60;background:var(--paper);border-bottom:1px solid var(--line)}
+.top-in{display:flex;align-items:center;gap:16px;height:62px}
+.mark{display:flex;align-items:center;gap:9px;font-weight:800;font-size:1.2rem;
+  letter-spacing:-.035em;text-decoration:none;flex:none}
+nav.tabs{display:flex;gap:2px;margin-left:auto;overflow-x:auto;scrollbar-width:none}
+nav.tabs::-webkit-scrollbar{display:none}
+nav.tabs a{padding:8px 12px;border-radius:5px;color:rgba(28,38,32,.66);font-size:.94rem;
+  font-weight:500;white-space:nowrap;text-decoration:none}
+nav.tabs a:hover{color:var(--ink);background:rgba(28,38,32,.05)}
+nav.tabs a.cta{background:var(--field);color:#FBF9F3;font-weight:700}
+nav.tabs a.cta:hover{background:#4E6746;color:#fff}
+.strata{display:flex;height:7px}
+.strata i{flex:1}
+
+section{padding:60px 0;border-bottom:1px solid var(--line)}
+section.dark{background:var(--soil);color:var(--paper);border-bottom:0}
+section.dark h2,section.dark h3,section.dark h4{color:#FBF9F3}
+section.dark .sub,section.dark .note{color:rgba(216,198,154,.8)}
+section.deep{background:var(--clay);color:#FBF9F3;border-bottom:0}
+section.deep .sub,section.deep .note{color:rgba(251,249,243,.85)}
+section.hero{padding:56px 0 44px}
+
+.eyebrow{font-family:var(--mono);font-size:.74rem;text-transform:uppercase;letter-spacing:.09em;
+  color:var(--clay);margin:0 0 14px;font-weight:600}
+.dark .eyebrow{color:rgba(216,198,154,.72)}
+.deep .eyebrow{color:rgba(251,249,243,.75)}
+.sub{font-size:1.12rem;max-width:62ch;color:rgba(28,38,32,.8)}
+.note{font-size:.92rem;color:rgba(28,38,32,.6)}
+.card{background:var(--paper2);border:1px solid var(--line);border-radius:8px;padding:22px}
+.card.hollow{background:transparent;border-color:rgba(216,198,154,.26)}
+.deep .card.hollow{border-color:rgba(251,249,243,.32)}
+.grid{display:grid;gap:16px}
+.g2{grid-template-columns:repeat(2,1fr)}
+.g3{grid-template-columns:repeat(3,1fr)}
+@media(max-width:900px){.g3{grid-template-columns:1fr}}
+@media(max-width:640px){.g2{grid-template-columns:1fr}}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:54px;
+  padding:0 26px;border-radius:7px;background:var(--field);color:#FBF9F3;font-weight:700;
+  font-size:1.02rem;text-decoration:none;border:0}
+.btn:hover{background:#4E6746;color:#fff}
+.btn.soil{background:var(--soil);color:var(--paper)}
+.btn.soil:hover{background:#33453A;color:var(--paper)}
+.btn.wheat{background:var(--signal);color:var(--soil)}
+.btn.wheat:hover{background:#BE9522;color:var(--soil)}
+.btn.ghost{background:transparent;border:1.5px solid var(--line);color:var(--ink)}
+.btn.ghost:hover{background:rgba(28,38,32,.05);color:var(--ink)}
+.dark .btn.ghost,.deep .btn.ghost{color:#FBF9F3;border-color:rgba(251,249,243,.4)}
+.dark .btn.ghost:hover,.deep .btn.ghost:hover{background:rgba(251,249,243,.12);color:#FBF9F3}
+.btns{display:flex;gap:12px;flex-wrap:wrap;margin-top:26px}
+
+.hero-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:44px;align-items:center}
+@media(max-width:900px){.hero-grid{grid-template-columns:1fr;gap:28px}}
+
+.chain{counter-reset:c;list-style:none;margin:0;padding:0}
+.chain li{counter-increment:c;display:flex;gap:16px;padding:16px 0;border-bottom:1px solid var(--line2)}
+.chain li:last-child{border-bottom:0}
+.chain li::before{content:counter(c);flex:none;width:34px;height:34px;border-radius:50%;
+  background:var(--clay);color:#fff;font-family:var(--mono);font-size:.88rem;font-weight:600;
+  display:flex;align-items:center;justify-content:center;margin-top:2px}
+.dark .chain li{border-color:rgba(216,198,154,.18)}
+.dark .chain li:last-child::before{background:var(--field)}
+.chain h3{margin-bottom:3px;font-size:1.06rem}
+.chain p{margin:0;font-size:.96rem;color:rgba(28,38,32,.72)}
+.dark .chain p{color:rgba(216,198,154,.82)}
+
+.who{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+@media(max-width:900px){.who{grid-template-columns:1fr}}
+.who a{display:flex;flex-direction:column;background:var(--paper2);border:1px solid var(--line);
+  border-top:4px solid var(--field);border-radius:8px;padding:24px;text-decoration:none}
+.who a:hover{border-color:var(--clay);border-top-color:var(--clay)}
+.who a:nth-child(2){border-top-color:var(--clay)}
+.who a:nth-child(3){border-top-color:var(--signal)}
+.who .k{font-family:var(--mono);font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;
+  color:var(--clay);font-weight:600;margin-bottom:10px}
+.who h3{margin-bottom:8px}
+.who p{font-size:.95rem;color:rgba(28,38,32,.72);flex:1}
+.who .go{font-weight:700;color:var(--field);font-size:.96rem;margin-top:6px}
+
+.pull{border-left:4px solid var(--signal);padding-left:20px;font-size:1.3rem;font-weight:600;
+  letter-spacing:-.02em;line-height:1.42;max-width:52ch}
+.two-col{columns:2;column-gap:36px}
+@media(max-width:760px){.two-col{columns:1}}
+.two-col li{break-inside:avoid;margin-bottom:10px}
+
+.promise{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid rgba(251,249,243,.3);
+  border-radius:8px;overflow:hidden}
+@media(max-width:760px){.promise{grid-template-columns:1fr}}
+.promise>div{padding:24px}
+.promise>div:first-child{border-right:1px solid rgba(251,249,243,.3)}
+@media(max-width:760px){.promise>div:first-child{border-right:0;border-bottom:1px solid rgba(251,249,243,.3)}}
+.promise ul{margin:12px 0 0;padding-left:20px}
+.promise li{margin-bottom:9px;font-size:.96rem}
+
+details{border:1px solid var(--line);border-radius:8px;background:var(--paper2);margin-bottom:10px}
+details summary{padding:16px 18px;font-weight:700;font-size:1.04rem;cursor:pointer;list-style:none;
+  display:flex;justify-content:space-between;gap:14px}
+details summary::-webkit-details-marker{display:none}
+details summary::after{content:"+";color:var(--clay);font-size:1.4rem;line-height:1;flex:none;font-weight:400}
+details[open] summary::after{content:"–"}
+details .b{padding:0 18px 18px;color:rgba(28,38,32,.76)}
+details .b p:last-child{margin-bottom:0}
+
+.contact-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+@media(max-width:900px){.contact-grid{grid-template-columns:1fr}}
+.contact-grid .big{font-family:var(--mono);font-weight:600;font-size:1.3rem;letter-spacing:-.02em;
+  color:var(--signal);display:block;margin-bottom:6px}
+
+.foot{padding:30px 0 48px;font-size:.9rem;color:rgba(28,38,32,.58)}
+.foot a{text-decoration:underline}
+.brand-foot{display:flex;align-items:center;gap:10px;font-weight:800;font-size:1.1rem;
+  letter-spacing:-.03em;margin-bottom:12px;color:var(--ink)}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap top-in">
+    <a class="mark" href="index.html">
+      <svg width="23" height="23" viewBox="0 0 22 22" aria-hidden="true">
+        <rect width="22" height="5" fill="#D8C69A"/><rect y="5" width="22" height="6" fill="#A66F4F"/>
+        <rect y="11" width="22" height="5" fill="#7A4F38"/><rect y="16" width="22" height="6" fill="#26342B"/>
+      </svg>Topracon
+    </a>
+    <nav class="tabs" aria-label="Bölümler">
+      <a href="#ne-yapiyoruz">Ne yapıyoruz</a>
+      <a href="#kimler">Kimler için</a>
+      <a href="#nasil-olcuyoruz">Nasıl ölçüyoruz</a>
+      <a href="#sorular">Sorular</a>
+      <a href="#iletisim">İletişim</a>
+      <a href="ciftci.html" class="cta">Çiftçiyim</a>
+    </nav>
+  </div>
+</header>
+<div class="strata"><i style="background:#D8C69A"></i><i style="background:#A66F4F"></i><i style="background:#607A55"></i><i style="background:#7A4F38"></i><i style="background:#26342B"></i></div>
+
+<!-- ================= HERO ================= -->
+<section class="hero"><div class="wrap">
+  <div class="hero-grid">
+    <div>
+      <p class="eyebrow">Konya · Karaman · Aksaray — kayıtlar açık</p>
+      <h1>Toprağı iyileştiren çiftçinin yanındayız.</h1>
+      <p class="sub">Topracon, çiftçilerin onarıcı tarıma geçişini finanse eder. Tarlada yapılanları uydu ve toprak analiziyle ölçer, bağımsız denetimden geçirir ve toprakta tutulan karbonu belgeleyip kurumsal alıcıya satar. Gelirin %80'i üreticiye döner.</p>
+      <div class="btns">
+        <a class="btn" href="ciftci.html">Çiftçiyseniz buradan başlayın</a>
+        <a class="btn ghost" href="#ne-yapiyoruz">Nasıl işliyor</a>
+      </div>
+    </div>
+    <div>
+      <svg viewBox="0 0 480 330" role="img" aria-label="Toprak kesiti: yüzeydeki anız, kökler ve üst toprakta biriken organik karbon">
+        <defs>
+          <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#FBF9F3"/><stop offset="1" stop-color="#EAE9DE"/></linearGradient>
+          <linearGradient id="ust" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#A67550"/><stop offset="1" stop-color="#8A5C3C"/></linearGradient>
+        </defs>
+        <rect width="480" height="118" fill="url(#sky)" rx="6"/>
+        <g stroke="#B08E5A" stroke-width="1.7" fill="none">
+          <path d="M22 120 q-2 -18 -4 -34"/><path d="M48 120 q2 -20 5 -38"/><path d="M76 120 q-2 -16 -4 -31"/>
+          <path d="M104 120 q3 -19 6 -36"/><path d="M132 120 q-1 -17 -3 -33"/><path d="M160 120 q2 -21 5 -39"/>
+          <path d="M188 120 q-3 -16 -5 -30"/><path d="M216 120 q1 -19 3 -36"/><path d="M244 120 q-2 -18 -4 -34"/>
+          <path d="M272 120 q3 -17 5 -33"/><path d="M300 120 q-1 -20 -3 -37"/><path d="M328 120 q2 -16 4 -31"/>
+          <path d="M356 120 q-3 -19 -5 -36"/><path d="M384 120 q1 -17 2 -33"/><path d="M412 120 q-2 -20 -4 -38"/>
+          <path d="M440 120 q3 -16 5 -31"/><path d="M462 120 q-1 -18 -2 -34"/>
+        </g>
+        <g fill="#D6A928">
+          <ellipse cx="18" cy="83" rx="2.4" ry="5"/><ellipse cx="53" cy="79" rx="2.4" ry="5"/>
+          <ellipse cx="72" cy="86" rx="2.4" ry="5"/><ellipse cx="110" cy="81" rx="2.4" ry="5"/>
+          <ellipse cx="129" cy="84" rx="2.4" ry="5"/><ellipse cx="165" cy="78" rx="2.4" ry="5"/>
+          <ellipse cx="183" cy="87" rx="2.4" ry="5"/><ellipse cx="219" cy="81" rx="2.4" ry="5"/>
+          <ellipse cx="240" cy="83" rx="2.4" ry="5"/><ellipse cx="277" cy="84" rx="2.4" ry="5"/>
+          <ellipse cx="297" cy="80" rx="2.4" ry="5"/><ellipse cx="332" cy="86" rx="2.4" ry="5"/>
+          <ellipse cx="351" cy="81" rx="2.4" ry="5"/><ellipse cx="386" cy="84" rx="2.4" ry="5"/>
+          <ellipse cx="408" cy="79" rx="2.4" ry="5"/><ellipse cx="445" cy="86" rx="2.4" ry="5"/>
+          <ellipse cx="460" cy="83" rx="2.4" ry="5"/>
+        </g>
+        <rect y="118" width="480" height="12" fill="#D8C69A"/>
+        <rect y="130" width="480" height="92" fill="url(#ust)"/>
+        <g fill="#26342B">
+          <circle cx="40" cy="148" r="2.4" opacity=".5"/><circle cx="88" cy="162" r="3.1" opacity=".45"/>
+          <circle cx="132" cy="144" r="2" opacity=".55"/><circle cx="176" cy="176" r="2.8" opacity=".4"/>
+          <circle cx="212" cy="150" r="2.2" opacity=".5"/><circle cx="256" cy="168" r="3.3" opacity=".42"/>
+          <circle cx="300" cy="146" r="2.1" opacity=".52"/><circle cx="344" cy="180" r="2.6" opacity=".38"/>
+          <circle cx="388" cy="156" r="3" opacity=".46"/><circle cx="428" cy="170" r="2.3" opacity=".5"/>
+          <circle cx="64" cy="194" r="2.6" opacity=".36"/><circle cx="152" cy="202" r="2.2" opacity=".34"/>
+          <circle cx="240" cy="196" r="2.9" opacity=".36"/><circle cx="330" cy="206" r="2.1" opacity=".32"/>
+          <circle cx="410" cy="198" r="2.5" opacity=".35"/><circle cx="110" cy="182" r="2" opacity=".42"/>
+          <circle cx="196" cy="190" r="2.4" opacity=".4"/><circle cx="286" cy="186" r="2.2" opacity=".42"/>
+          <circle cx="368" cy="194" r="2.7" opacity=".38"/><circle cx="452" cy="184" r="2.1" opacity=".44"/>
+        </g>
+        <g stroke="#D8C69A" fill="none" opacity=".32">
+          <path d="M53 130 C40 155 66 173 50 197" stroke-width="1.5"/>
+          <path d="M110 130 C98 149 124 169 108 191" stroke-width="1.4"/>
+          <path d="M165 130 C152 157 178 175 162 203" stroke-width="1.5"/>
+          <path d="M219 130 C206 151 232 171 216 195" stroke-width="1.4"/>
+          <path d="M277 130 C264 155 290 175 274 201" stroke-width="1.5"/>
+          <path d="M332 130 C320 149 346 169 330 193" stroke-width="1.4"/>
+          <path d="M386 130 C374 157 400 175 384 205" stroke-width="1.5"/>
+          <path d="M445 130 C432 151 458 171 442 197" stroke-width="1.4"/>
+        </g>
+        <rect y="222" width="480" height="52" fill="#7A4F38"/>
+        <rect y="274" width="480" height="56" fill="#26342B"/>
+        <g stroke="#D6A928" stroke-width="2.2" fill="none">
+          <path d="M430 130 h16 M430 222 h16 M438 130 v92"/></g>
+        <text x="422" y="181" font-size="13" fill="#D6A928" text-anchor="end" font-weight="700"
+          font-family="IBM Plex Mono, monospace">30 cm</text>
+        <text x="20" y="152" font-size="14" fill="#FBF9F3" font-weight="700"
+          font-family="Manrope, sans-serif">Organik karbon burada birikir</text>
+        <text x="20" y="172" font-size="12" fill="rgba(251,249,243,.8)"
+          font-family="Manrope, sans-serif">Ölçtüğümüz, belgelediğimiz ve sattığımız şey bu.</text>
+      </svg>
+    </div>
+  </div>
+</div></section>
+
+<!-- ================= NE YAPIYORUZ ================= -->
+<section class="dark" id="ne-yapiyoruz"><div class="wrap">
+  <p class="eyebrow">Ne yapıyoruz</p>
+  <h2>Toprakta tutulan karbonu ölçülebilir ve satılabilir hale getiriyoruz</h2>
+  <p class="sub" style="margin-bottom:28px">Pulluğun kaldırılması, örtü bitkisi ekilmesi ve anızın tarlada bırakılması toprağın organik maddesini artırır. Bu, havadaki karbonun toprakta tutulması demektir. Biz o karbonu ölçüp belgeliyor, satışını yapıyor ve gelirin büyük kısmını çiftçiye aktarıyoruz.</p>
+  <ol class="chain">
+    <li><div><h3>Çiftçi toprağı iyileştirir</h3>
+      <p>Pulluğu kaldırır, örtü bitkisi eker, anızı tarlada bırakır, gübreyi analize göre atar. Bunların hepsi zaten bilinen ama nakit engeline takılan uygulamalar.</p></div></li>
+    <li><div><h3>Ölçer ve doğrularız</h3>
+      <p>Başlangıçta her parselden 0–30 cm derinlikte toprak örneği alınır. Sonrasında uydu tarlayı düzenli görüntüler, çiftçi işlemlerini deftere kaydeder. Beyan ile uydunun birbirini tutması gerekir.</p></div></li>
+    <li><div><h3>Bağımsız denetim belgeler</h3>
+      <p>Hesabı bizim dışımızda bir denetim kuruluşu kontrol eder. Onay çıkarsa toprakta tutulan karbon, uluslararası geçerliliği olan bir belgeye dönüşür.</p></div></li>
+    <li><div><h3>Belge satılır, gelir üreticiye döner</h3>
+      <p>Belgeyi, kendi emisyonunu dengelemek zorunda olan kurumsal alıcıya satarız. Gelirin %80'i çiftçinin; kalan %20 ölçüm, denetim, sicil ve satış masraflarımızdır.</p></div></li>
+  </ol>
+  <div class="btns">
+    <a class="btn wheat" href="ciftci.html">Çiftçi olarak katılmak istiyorum</a>
+  </div>
+</div></section>
+
+<!-- ================= FİNANSMAN ================= -->
+<section><div class="wrap">
+  <p class="eyebrow">Farkımız</p>
+  <h2>Karbonu satmadan önce geçişi finanse ediyoruz</h2>
+  <p class="sub" style="margin-bottom:24px">Onarıcı tarımın önündeki engel bilgi değil, zamanlama. Tohum, mibzer ve ilk yılların verim riski ekim ayında ortaya çıkar; karbon geliri ise doğrulama sonrası, en iyi ihtimalle bir buçuk yıl sonra gelir. Aradaki boşluğu kapatmazsanız çiftçi haklı olarak geçmez.</p>
+  <div class="grid g3">
+    <div class="card"><h3 style="margin-bottom:8px">Ekimden önce avans</h3>
+      <p class="note">İlk ödeme, karbon satılmadan önce yapılır. Riski biz taşırız; kredi çıkmazsa avans geri istenmez.</p></div>
+    <div class="card"><h3 style="margin-bottom:8px">Girdi finansmanı</h3>
+      <p class="note">Örtü bitkisi tohumu ve benzeri girdiler nakit yerine doğrudan tedarik edilir, hasat sonrası ödemeden mahsup edilir.</p></div>
+    <div class="card"><h3 style="margin-bottom:8px">Ortak mibzer havuzu</h3>
+      <p class="note">Doğrudan ekim mibzeri en büyük giriş engeli. Kooperatif üzerinden ortak makine ve saatlik kiralama düzeni kuruyoruz.</p></div>
+  </div>
+  <div style="margin-top:30px"><p class="pull">Çiftçiye "sonra kazanırsın" demek yetmiyor. Ekim ayında hesabına para geçmezse hiçbir şey değişmiyor.</p></div>
+</div></section>
+
+<!-- ================= KİMLER İÇİN ================= -->
+<section id="kimler"><div class="wrap">
+  <p class="eyebrow">Kimler için</p>
+  <h2>Üç taraf, tek zincir</h2>
+  <p class="sub" style="margin-bottom:26px">Hangi taraftan geliyorsanız oradan başlayın.</p>
+  <div class="who">
+    <a href="ciftci.html">
+      <span class="k">Üretici</span>
+      <h3>Çiftçiler</h3>
+      <p>Kaç dönüm ektiğinizi ve şu an toprağı nasıl işlediğinizi bize bırakın; ziraat mühendisimiz arasın, kendi tarlanız için hesabı çıkarsın. Kayıt ve toprak analizi ücretsiz, hiçbir şeye bağlamaz.</p>
+      <span class="go">Çiftçi sayfası ›</span>
+    </a>
+    <a href="brosur-a5.html">
+      <span class="k">Kanal</span>
+      <h3>Kooperatifler ve birlikler</h3>
+      <p>Üyelerinize dağıtabileceğiniz basılı broşür ve kayıt fişi hazır. Toplu başvuruda masraflar paylaşılır, üyelerinizin payı artar; mibzer havuzunu da kooperatif üzerinden kuruyoruz.</p>
+      <span class="go">Broşürü aç ve yazdır ›</span>
+    </a>
+    <a href="#iletisim">
+      <span class="k">Alıcı</span>
+      <h3>Kurumsal alıcılar</h3>
+      <p>Türkiye tarlasından, parsel düzeyinde izlenebilir ve bağımsız denetimden geçmiş karbon belgesi. Tedarik zinciriniz bu havzadaysa aynı veriyi raporlamanızda da kullanabilirsiniz.</p>
+      <span class="go">Bize ulaşın ›</span>
+    </a>
+  </div>
+</div></section>
+
+<!-- ================= NASIL ÖLÇÜYORUZ ================= -->
+<section class="deep" id="nasil-olcuyoruz"><div class="wrap">
+  <p class="eyebrow">Şeffaflık</p>
+  <h2>Ölçemediğimiz şeyi satmıyoruz</h2>
+  <p class="sub" style="margin-bottom:28px">Karbon piyasasının itibar sorunu, ölçülmemiş iyi niyetin belge diye satılmasından çıktı. Üç katmanlı bir doğrulama kuruyoruz ve üçünün de nasıl çalıştığını çiftçiye de alıcıya da açıkça gösteriyoruz.</p>
+  <div class="grid g3">
+    <div class="card hollow"><h3 style="margin-bottom:8px">Toprak analizi</h3>
+      <p class="note">Her parselden 0–30 cm derinlikte kompozit örnek, akredite laboratuvar. Başlangıç noktası ölçülmeden hiçbir iddia üretilmez.</p></div>
+    <div class="card hollow"><h3 style="margin-bottom:8px">Uydu takibi</h3>
+      <p class="note">Tarla düzenli aralıklarla görüntülenir. Toprak işleme, örtü bitkisi ve anız yakma izleri beyanla karşılaştırılır. Çiftçi bu görüntüleri kendi panelinden görür.</p></div>
+    <div class="card hollow"><h3 style="margin-bottom:8px">Bağımsız denetim</h3>
+      <p class="note">Hesabı biz onaylamayız. Dışarıdan bir denetim kuruluşu inceler; bulgular kapanmadan belge çıkmaz.</p></div>
+  </div>
+
+  <div class="promise" style="margin-top:30px">
+    <div>
+      <h3>Söz verdiğimiz</h3>
+      <ul>
+        <li>Gelirin %80'i üreticiye.</li>
+        <li>İlk ödeme ekimden önce, karbon satılmadan.</li>
+        <li>Kayıt, toprak analizi ve danışmanlık ücretsiz.</li>
+        <li>Ne alacağınız, ne zaman alacağınız ve hangi fiyatın geçerli olduğu sözleşmede yazılı.</li>
+        <li>Tarla sahibinin malı; kira, ipotek ya da haciz değil.</li>
+      </ul>
+    </div>
+    <div>
+      <h3>Söz vermediğimiz</h3>
+      <ul>
+        <li>Sabit bir kazanç rakamı. Sonuç toprağa, uygulamaya ve fiyata göre değişir.</li>
+        <li>Verim garantisi. Geçişin ilk yıllarında verim bir miktar düşebilir.</li>
+        <li>Hızlı sonuç. Toprak karbonu yavaş birikir, taahhüt on yıllıktır.</li>
+        <li>Kayıt tutmadan ödeme. Defter boşsa denetim onay vermez.</li>
+      </ul>
+    </div>
+  </div>
+</div></section>
+
+<!-- ================= NEDEN ÖNEMLİ ================= -->
+<section><div class="wrap">
+  <p class="eyebrow">Neden önemli</p>
+  <h2>Mesele yalnızca karbon değil</h2>
+  <div class="grid g2" style="margin-top:22px">
+    <div>
+      <p class="sub">Kurak havzalarda üst toprak yıllardır incelip organik maddesini kaybediyor. Bunun sonucu tarlada görülüyor: azalan su tutma kapasitesi, artan gübre ihtiyacı, rüzgârla ve suyla giden üst toprak.</p>
+      <p class="sub">Onarıcı tarım bunların hepsini aynı anda ele alan bir yaklaşım. Karbon geliri de bu geçişi yıllar sonrasına değil, bu sezona çeken şey.</p>
+    </div>
+    <div>
+      <ul class="two-col" style="margin:0;padding-left:20px">
+        <li>Daha az mazot ve daha az geçiş</li>
+        <li>Analize göre gübre, daha düşük girdi masrafı</li>
+        <li>Yağmurun tarlada kalması</li>
+        <li>Erozyon ve toprak sıkışmasının azalması</li>
+        <li>Kökün derine inmesi</li>
+        <li>Uzun vadede daha verimli ve daha değerli tarla</li>
+      </ul>
+      <p class="note" style="margin-top:16px">Bu faydalar karbon fiyatından bağımsızdır ve fiyat ne olursa olsun tarlada kalır.</p>
+    </div>
+  </div>
+</div></section>
+
+<!-- ================= SORULAR ================= -->
+<section id="sorular"><div class="narrow">
+  <p class="eyebrow">Sık sorulanlar</p>
+  <h2 style="margin-bottom:26px">Merak edilenler</h2>
+
+  <details open><summary>Bu "karbon" tam olarak ne, neden biri buna para veriyor?</summary>
+    <div class="b"><p>Toprağın organik maddesi karbon içerir. Bitki havadan karbondioksit alır, kökleriyle toprağa taşır. Pulluk toprağı devirince bu karbon havaya geri kaçar; devirmezseniz toprakta kalır.</p>
+    <p>Dünyada büyük şirketler saldıkları karbonu azaltmak ve dengelemek zorunda. Bunun için denetimden geçmiş, nerede ve nasıl üretildiği belli karbon belgeleri satın alıyorlar. Parayı ödeyen devlet ya da hibe değil, kendi emisyonunu dengelemek zorunda olan şirket.</p></div></details>
+
+  <details><summary>Çiftçinin tarlası elinden çıkar mı?</summary>
+    <div class="b"><p>Hayır. Tapu, mülkiyet ve kullanım hakkı tamamen çiftçide kalır. Sözleşme yalnızca topraktaki karbonun satış hakkını kapsar, arazinin kendisini değil. Tarla satılabilir; bu durumda taahhüdün yeni sahip tarafından sürdürülmesi gerekir.</p></div></details>
+
+  <details><summary>Neden sitede "dönüm başına şu kadar kazanırsınız" yazmıyorsunuz?</summary>
+    <div class="b"><p>Çünkü dürüst bir rakam ancak tek bir tarla için hesaplanabilir. Toprağın başlangıç durumu, geçilen uygulamalar ve iklim bölgesi sonucu doğrudan değiştirir; ayrıca ödeme döviz üzerinden hesaplandığı için TL karşılığı kurla birlikte değişir.</p>
+    <p>Genel bir sayı yazıp sonra tutmamaktansa, ziraat mühendisinin ilgili tarla için hesaplayıp yazılı vermesini tercih ediyoruz.</p></div></details>
+
+  <details><summary>Devlet destekleri etkilenir mi?</summary>
+    <div class="b"><p>Hayır. Mazot ve gübre desteği, fark ödemesi ve diğer tarımsal destekler bu programdan bağımsızdır.</p></div></details>
+
+  <details><summary>Zaten doğrudan ekim yapan çiftçi katılabilir mi?</summary>
+    <div class="b"><p>Katılabilir, ama zaten yapılan uygulama ödeme getirmez. Karbon piyasasının kuralı, yalnızca yeni yapılan iyileştirmeye ödeme yapılmasıdır. Örtü bitkisi, gübre azaltımı veya anız yönetimi gibi henüz geçilmemiş kalemler varsa onlardan ödeme çıkar.</p></div></details>
+
+  <details><summary>Hangi bölgelerde çalışıyorsunuz?</summary>
+    <div class="b"><p>Şu anda Konya, Karaman ve Aksaray'da kayıt alıyoruz. Tek havzada, tek iklim rejiminde derinleşmeyi tercih ediyoruz; ölçüm kalibrasyonu ancak böyle güvenilir oluyor. Diğer illerden başvuruları sıraya alıyoruz.</p></div></details>
+</div></section>
+
+<!-- ================= İLETİŞİM ================= -->
+<section class="dark" id="iletisim"><div class="wrap">
+  <p class="eyebrow">İletişim</p>
+  <h2 style="margin-bottom:26px">Kim olduğunuza göre doğru kapı</h2>
+  <div class="contact-grid">
+    <div class="card hollow">
+      <h3 style="margin-bottom:8px">Çiftçi hattı</h3>
+      <span class="big">0850 000 00 00</span>
+      <p class="note">Hafta içi 08.00–18.00. Ziraat mühendisimiz arar, tarlanızı konuşur.</p>
+      <div class="btns" style="margin-top:14px"><a class="btn wheat" href="ciftci.html">Kayıt bırak</a></div>
+    </div>
+    <div class="card hollow">
+      <h3 style="margin-bottom:8px">Kurumsal alıcılar</h3>
+      <span class="big" style="font-size:1.05rem">karbon@topracon.com</span>
+      <p class="note">Kredi tedariki, ön satış ve tedarik zinciri raporlaması için.</p>
+    </div>
+    <div class="card hollow">
+      <h3 style="margin-bottom:8px">Kooperatif ve basın</h3>
+      <span class="big" style="font-size:1.05rem">iletisim@topracon.com</span>
+      <p class="note">Toplu başvuru, saha toplantısı ve bilgi talepleri.</p>
+    </div>
+  </div>
+</div></section>
+
+<div class="wrap foot">
+  <div class="brand-foot">
+    <svg width="24" height="24" viewBox="0 0 22 22" aria-hidden="true">
+      <rect width="22" height="5" fill="#D8C69A"/><rect y="5" width="22" height="6" fill="#A66F4F"/>
+      <rect y="11" width="22" height="5" fill="#7A4F38"/><rect y="16" width="22" height="6" fill="#26342B"/>
+    </svg>Topracon
+  </div>
+  <p><a href="ciftci.html">Çiftçiler</a> · <a href="panel.html">Çiftçi paneli</a> · <a href="brosur-a5.html">Broşür</a> · <a href="ozet-a4.html">A4 özet</a> · <a href="#iletisim">İletişim</a></p>
+  <p>Bu sitede yer alan bilgiler tanıtım amaçlıdır ve ödeme taahhüdü içermez. Ödeme tutarı tarlanın durumuna, geçilen uygulamalara ve karbon satış fiyatına göre belirlenir; bağlayıcı koşullar imzalanan sözleşmede yazar. Karbon fiyatı düşerse ödeme de düşer.</p>
+</div>
+
+</body>
+</html>

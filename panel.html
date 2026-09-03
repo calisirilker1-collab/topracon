@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Topracon — Çiftçi paneli (prototip)</title>
+<meta name="description" content="Topracon üyesi çiftçinin telefonundan kullandığı panel: tarla defteri, uydu kontrol durumu, ödeme takvimi, belgeler ve destek.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 22 22'%3E%3Crect width='22' height='5' fill='%23D8C69A'/%3E%3Crect y='5' width='22' height='6' fill='%23A66F4F'/%3E%3Crect y='11' width='22' height='5' fill='%237A4F38'/%3E%3Crect y='16' width='22' height='6' fill='%2326342B'/%3E%3C/svg%3E">
+<meta name="theme-color" content="#26342B">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --soil:#26342B; --field:#607A55; --clay:#A66F4F; --wheat:#D8C69A;
+  --paper:#F4F1E8; --paper2:#FBF9F3; --signal:#D6A928; --alert:#8E4A32; --ink:#1C2620;
+  --rule:rgba(28,38,32,.16); --rule-2:rgba(28,38,32,.08);
+  --disp:"Manrope","Segoe UI",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  --nav:64px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{background:#1B241E;color:var(--ink);font-family:var(--disp);font-size:16px;line-height:1.5;
+  -webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{margin:0;font-weight:800;letter-spacing:-.025em;line-height:1.15}
+h2{font-size:1.22rem}h3{font-size:1.02rem}h4{font-size:.95rem}
+p{margin:0}
+button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
+:focus-visible{outline:3px solid var(--signal);outline-offset:2px;border-radius:4px}
+.mono{font-family:var(--mono);font-feature-settings:"tnum" 1}
+.num{font-family:var(--mono);font-feature-settings:"tnum" 1}
+
+/* ---------- prototip kabuğu (yalnızca geniş ekran) ---------- */
+.demo{background:var(--soil);color:var(--paper);padding:11px 18px;display:flex;gap:12px;
+  align-items:center;flex-wrap:wrap;font-size:13.5px}
+.demo b{font-weight:800;letter-spacing:-.02em}
+.demo .sp{margin-left:auto}
+.demo .note{color:rgba(244,241,232,.7);font-size:12.5px}
+.demo button{border:1px solid rgba(244,241,232,.38);border-radius:4px;padding:7px 13px;
+  font-size:12.5px;font-weight:600}
+.demo button[aria-pressed="true"]{background:var(--signal);color:var(--soil);border-color:var(--signal)}
+.stage{display:flex;justify-content:center;padding:22px 14px 40px}
+.app{width:100%;max-width:430px;background:var(--paper);position:relative;
+  border-radius:22px;overflow:hidden;box-shadow:0 10px 40px rgba(0,0,0,.35);
+  min-height:820px;display:flex;flex-direction:column}
+@media(max-width:520px){
+  .demo{display:none}
+  .stage{padding:0}
+  .app{border-radius:0;box-shadow:none;min-height:100vh;max-width:none}
+}
+
+/* ---------- başlık ---------- */
+.top{background:var(--soil);color:var(--paper);padding:14px 16px 13px;flex:none}
+.top-row{display:flex;align-items:center;gap:10px}
+.logo{display:flex;flex-direction:column;width:20px;flex:none}
+.logo i{display:block;height:5px}
+.who{line-height:1.25}
+.who b{display:block;font-weight:800;font-size:.98rem;letter-spacing:-.02em}
+.who span{font-family:var(--mono);font-size:.68rem;color:rgba(216,198,154,.78);
+  text-transform:uppercase;letter-spacing:.06em}
+.top .bell{margin-left:auto;position:relative;width:40px;height:40px;border-radius:50%;
+  background:rgba(244,241,232,.1);display:flex;align-items:center;justify-content:center}
+.top .bell i{position:absolute;top:7px;right:8px;width:9px;height:9px;border-radius:50%;
+  background:var(--signal);border:2px solid var(--soil)}
+.contract{margin-top:13px;background:rgba(244,241,232,.09);border-radius:8px;padding:11px 13px}
+.contract .l{display:flex;justify-content:space-between;font-size:.8rem;
+  color:rgba(216,198,154,.85);margin-bottom:7px}
+.contract .l b{color:var(--paper);font-weight:700}
+.track{height:6px;background:rgba(244,241,232,.16);border-radius:3px;overflow:hidden}
+.track i{display:block;height:100%;background:var(--signal);border-radius:3px}
+
+/* ---------- gövde ---------- */
+.body{flex:1;overflow-y:auto;padding:16px 16px calc(var(--nav) + 22px)}
+.view{display:none}.view.on{display:block}
+.sec{display:flex;align-items:baseline;gap:8px;margin:22px 0 10px}
+.sec:first-child{margin-top:0}
+.sec h2{flex:1}
+.sec .more{font-family:var(--mono);font-size:.68rem;text-transform:uppercase;
+  letter-spacing:.07em;color:var(--clay);font-weight:600}
+
+.card{background:var(--paper2);border:1px solid var(--rule);border-radius:10px;padding:14px}
+.card+.card{margin-top:10px}
+.card.soil{background:var(--soil);color:var(--paper);border-color:transparent}
+.card.soil .sub{color:rgba(216,198,154,.82)}
+.sub{font-size:.88rem;color:rgba(28,38,32,.66)}
+
+.tri{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.tri>div{background:var(--paper2);border:1px solid var(--rule);border-radius:10px;padding:11px 10px}
+.tri .v{font-family:var(--mono);font-weight:600;font-size:1.24rem;letter-spacing:-.03em;line-height:1}
+.tri .l{font-size:.7rem;color:rgba(28,38,32,.6);margin-top:5px;line-height:1.3}
+.tri .v.warn{color:var(--alert)}
+
+/* aksiyon kartı */
+.act{display:flex;gap:12px;background:var(--paper2);border:1px solid var(--rule);
+  border-left:4px solid var(--signal);border-radius:8px;padding:13px 14px;width:100%;
+  text-align:left;align-items:flex-start}
+.act+.act{margin-top:9px}
+.act.bad{border-left-color:var(--alert)}
+.act .ico{flex:none;width:30px;height:30px;border-radius:8px;background:rgba(214,169,40,.22);
+  display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1rem;color:#7A5F10}
+.act.bad .ico{background:rgba(142,74,50,.16);color:var(--alert)}
+.act h4{margin-bottom:3px}
+.act p{font-size:.85rem;color:rgba(28,38,32,.68)}
+.act .go{margin-left:auto;align-self:center;font-size:1.3rem;color:rgba(28,38,32,.32);flex:none}
+
+/* ödeme */
+.pay-big{font-family:var(--mono);font-weight:600;font-size:1.75rem;letter-spacing:-.03em;line-height:1}
+.steps{display:flex;margin-top:14px}
+.steps>div{flex:1;position:relative;padding-top:16px;font-size:.68rem;line-height:1.3;
+  color:rgba(216,198,154,.7);font-family:var(--mono);text-transform:uppercase;letter-spacing:.04em}
+.steps>div::before{content:"";position:absolute;top:4px;left:0;right:0;height:3px;
+  background:rgba(244,241,232,.18)}
+.steps>div.done::before{background:var(--field)}
+.steps>div.now::before{background:var(--signal)}
+.steps>div.now{color:var(--signal)}
+.steps>div:first-child::before{border-radius:2px 0 0 2px}
+.steps>div:last-child::before{border-radius:0 2px 2px 0}
+
+/* liste satırı */
+.row{display:flex;gap:12px;align-items:center;background:var(--paper2);border:1px solid var(--rule);
+  border-radius:10px;padding:13px 14px;width:100%;text-align:left}
+.row+.row{margin-top:9px}
+.row .main{flex:1;min-width:0}
+.row .main b{display:block;font-weight:700;font-size:1rem;letter-spacing:-.015em}
+.row .main span{font-size:.82rem;color:rgba(28,38,32,.62)}
+.row .go{font-size:1.3rem;color:rgba(28,38,32,.3);flex:none}
+.dot{width:10px;height:10px;border-radius:50%;flex:none}
+.dot.ok{background:var(--field)}.dot.warn{background:var(--signal)}.dot.bad{background:var(--alert)}
+
+.tag{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:.68rem;
+  padding:3px 7px;border-radius:4px;background:rgba(28,38,32,.07);text-transform:uppercase;
+  letter-spacing:.04em;font-weight:600}
+.tag.ok{background:rgba(96,122,85,.18);color:#3E5237}
+.tag.warn{background:rgba(214,169,40,.24);color:#7A5F10}
+.tag.bad{background:rgba(142,74,50,.16);color:var(--alert)}
+.tag.wait{background:rgba(28,38,32,.08);color:rgba(28,38,32,.6)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+.chip{font-size:.76rem;padding:5px 9px;border-radius:6px;background:rgba(96,122,85,.14);
+  border:1px solid rgba(96,122,85,.28);font-weight:500}
+
+/* defter */
+.daygroup{font-family:var(--mono);font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;
+  color:var(--clay);font-weight:600;margin:18px 0 8px}
+.daygroup:first-child{margin-top:0}
+.entry{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--rule-2)}
+.entry:last-child{border-bottom:0}
+.entry .when{font-family:var(--mono);font-size:.74rem;color:rgba(28,38,32,.55);width:44px;flex:none;
+  padding-top:2px}
+.entry .main{flex:1;min-width:0}
+.entry .main b{display:block;font-size:.95rem;font-weight:700}
+.entry .main p{font-size:.83rem;color:rgba(28,38,32,.64)}
+
+/* tablo benzeri ödeme listesi */
+.pl{display:flex;gap:10px;align-items:baseline;padding:12px 0;border-bottom:1px solid var(--rule-2)}
+.pl:last-child{border-bottom:0}
+.pl .d{font-family:var(--mono);font-size:.74rem;color:rgba(28,38,32,.55);width:54px;flex:none}
+.pl .t{flex:1;min-width:0;font-size:.93rem}
+.pl .t small{display:block;font-size:.78rem;color:rgba(28,38,32,.58)}
+.pl .a{font-family:var(--mono);font-weight:600;font-size:.95rem;white-space:nowrap;text-align:right}
+.pl .a.in{color:var(--field)}
+.pl .a.out{color:var(--alert)}
+.pl .a.est{color:rgba(28,38,32,.5)}
+
+/* butonlar */
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;
+  min-height:54px;border-radius:10px;background:var(--field);color:#FBF9F3;
+  font-weight:700;font-size:1.02rem;padding:0 18px}
+.btn:active{transform:translateY(1px)}
+.btn.soil{background:var(--soil);color:var(--paper)}
+.btn.ghost{background:transparent;border:1.5px solid var(--rule);color:var(--ink)}
+.btn.wheat{background:var(--signal);color:var(--soil)}
+.btn.sm{min-height:44px;font-size:.92rem;border-radius:8px}
+.btn-row{display:flex;gap:9px;margin-top:12px}
+.btn-row .btn{width:auto;flex:1}
+
+/* yüzen kayıt butonu */
+.fab{position:absolute;left:16px;right:16px;bottom:calc(var(--nav) + 12px);z-index:20}
+.fab .btn{box-shadow:0 6px 20px rgba(38,52,43,.32)}
+
+/* alt gezinme */
+.nav{position:absolute;left:0;right:0;bottom:0;height:var(--nav);background:var(--paper2);
+  border-top:1px solid var(--rule);display:grid;grid-template-columns:repeat(5,1fr);z-index:30}
+.nav button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+  font-size:.66rem;font-weight:600;color:rgba(28,38,32,.52);height:100%;position:relative}
+.nav button svg{width:21px;height:21px;stroke:currentColor;stroke-width:1.9;fill:none;
+  stroke-linecap:round;stroke-linejoin:round}
+.nav button[aria-current="true"]{color:var(--soil)}
+.nav button[aria-current="true"]::before{content:"";position:absolute;top:0;left:22%;right:22%;
+  height:3px;background:var(--soil);border-radius:0 0 3px 3px}
+.nav .badge{position:absolute;top:8px;right:calc(50% - 18px);min-width:16px;height:16px;
+  border-radius:8px;background:var(--alert);color:#fff;font-family:var(--mono);font-size:.6rem;
+  display:flex;align-items:center;justify-content:center;padding:0 4px;font-weight:600}
+
+/* çekmece (form / detay) */
+.sheet{position:absolute;inset:0;z-index:40;display:none}
+.sheet.on{display:block}
+.sheet .veil{position:absolute;inset:0;background:rgba(27,36,30,.5)}
+.sheet .panel{position:absolute;left:0;right:0;bottom:0;max-height:92%;overflow-y:auto;
+  background:var(--paper);border-radius:16px 16px 0 0;padding:8px 16px 22px}
+.grab{width:42px;height:4px;border-radius:2px;background:rgba(28,38,32,.24);margin:6px auto 14px}
+.sheet-h{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.sheet-h h3{flex:1}
+.sheet-h button{width:34px;height:34px;border-radius:50%;background:rgba(28,38,32,.07);
+  font-size:1.1rem;line-height:1;display:flex;align-items:center;justify-content:center}
+
+label.f{display:block;font-size:.85rem;font-weight:700;margin:0 0 6px}
+select,input[type=text],input[type=number],input[type=date],textarea{
+  width:100%;min-height:50px;padding:12px 13px;border:1.5px solid var(--rule);border-radius:9px;
+  background:#fff;font:inherit;font-size:1rem;color:var(--ink)}
+textarea{min-height:80px;resize:vertical}
+.field+.field{margin-top:13px}
+.pick{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.pick label{display:flex;align-items:center;gap:8px;border:1.5px solid var(--rule);
+  background:#fff;border-radius:9px;padding:12px 12px;font-size:.92rem;font-weight:500;
+  min-height:50px;cursor:pointer}
+.pick label:has(input:checked){border-color:var(--field);background:rgba(96,122,85,.12)}
+.pick input{accent-color:var(--field);width:19px;height:19px;flex:none}
+.photo{display:flex;align-items:center;justify-content:center;gap:9px;border:1.5px dashed var(--rule);
+  border-radius:9px;min-height:60px;font-size:.92rem;font-weight:600;color:rgba(28,38,32,.6);width:100%}
+
+/* uyarı şeridi */
+.banner{background:rgba(214,169,40,.22);border-bottom:1px solid rgba(214,169,40,.4);
+  padding:10px 16px;font-size:.85rem;display:none;gap:9px;align-items:center;flex:none}
+.banner.on{display:flex}
+.banner b{font-weight:700}
+.banner .n{font-family:var(--mono);background:var(--signal);color:var(--soil);border-radius:5px;
+  padding:2px 6px;font-size:.75rem;font-weight:600;flex:none}
+
+.toast{position:absolute;left:16px;right:16px;bottom:calc(var(--nav) + 76px);z-index:50;
+  background:var(--soil);color:var(--paper);border-radius:9px;padding:13px 15px;font-size:.9rem;
+  transform:translateY(20px);opacity:0;pointer-events:none;transition:.22s}
+.toast.on{transform:translateY(0);opacity:1}
+.help-q{border:1px solid var(--rule);border-radius:9px;background:var(--paper2);margin-bottom:8px}
+.help-q summary{padding:13px 14px;font-weight:700;font-size:.95rem;cursor:pointer;list-style:none;
+  display:flex;justify-content:space-between;gap:10px}
+.help-q summary::-webkit-details-marker{display:none}
+.help-q summary::after{content:"+";color:var(--clay);font-size:1.25rem;line-height:1;flex:none}
+.help-q[open] summary::after{content:"–"}
+.help-q .b{padding:0 14px 14px;font-size:.9rem;color:rgba(28,38,32,.75)}
+.fine{font-size:.76rem;color:rgba(28,38,32,.52);line-height:1.45;margin-top:16px}
+</style>
+</head>
+<body>
+
+<div class="demo">
+  <b>Çiftçi paneli — prototip</b>
+  <span class="note">Telefon için tasarlandı. Sekmelere, tarlalara ve kayıt formuna dokunun.</span>
+  <span class="sp"></span>
+  <button type="button" id="offBtn" aria-pressed="false" onclick="toggleOffline()">Sinyal yok modu</button>
+</div>
+
+<div class="stage">
+<div class="app" id="app">
+
+  <!-- ===== başlık ===== -->
+  <div class="top">
+    <div class="top-row">
+      <span class="logo" aria-hidden="true">
+        <i style="background:#D8C69A"></i><i style="background:#A66F4F"></i>
+        <i style="background:#7A4F38"></i><i style="background:#26342B"></i>
+      </span>
+      <span class="who"><b>Hasan Yılmaz</b><span>Üye TC-42-0119 · Çumra</span></span>
+      <button class="bell" onclick="go('daha')" aria-label="Bildirimler">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#D8C69A" stroke-width="1.9"
+          stroke-linecap="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 8-3 8h18s-3-1-3-8"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></svg>
+        <i></i>
+      </button>
+    </div>
+    <div class="contract">
+      <div class="l"><span>Sözleşme <b>aktif</b> · 2. yıl / 10</span><span class="mono">1.240 dönüm</span></div>
+      <div class="track"><i style="width:20%"></i></div>
+    </div>
+  </div>
+
+  <div class="banner" id="banner">
+    <span class="n" id="qN">0</span>
+    <span><b>Kayıt sırada bekliyor.</b> Sinyal gelince kendiliğinden gönderilecek.</span>
+  </div>
+
+  <!-- ===== gövde ===== -->
+  <div class="body" id="body">
+
+    <!-- ---------- ÖZET ---------- -->
+    <div class="view on" id="v-ozet">
+      <div class="tri">
+        <div><div class="v">1.240</div><div class="l">kayıtlı dönüm</div></div>
+        <div><div class="v">14</div><div class="l">bu sezon kaydı</div></div>
+        <div><div class="v warn">2</div><div class="l">açık uyarı</div></div>
+      </div>
+
+      <div class="sec"><h2>Şimdi yapılması gerekenler</h2></div>
+      <button class="act bad" onclick="openParcel('3-1')">
+        <span class="ico">!</span>
+        <span><h4>Parsel 3-1'de toprak işleme görüldü</h4>
+        <p>22 Mart görüntüsünde derin işleme izi var, taahhüdünüzde doğrudan ekim yazıyor. Açıklama ekleyin ya da itiraz edin.</p></span>
+        <span class="go">›</span>
+      </button>
+      <button class="act" onclick="openForm('12-7 · Çumra','Örtü bitkisi ekimi')">
+        <span class="ico">+</span>
+        <span><h4>Parsel 12-7'nin örtü bitkisi kaydı eksik</h4>
+        <p>Uydu 14 Kasım'da yeşil doku gördü ama defterde kayıt yok. Kaydı girin, yoksa bu parselin katkısı hesaptan düşer.</p></span>
+        <span class="go">›</span>
+      </button>
+
+      <div class="sec"><h2>Sıradaki ödeme</h2><span class="more">Haziran 2026</span></div>
+      <div class="card soil">
+        <p class="sub">Tahmini bakiye ödemesi</p>
+        <p class="pay-big" style="margin-top:6px">451.600 ₺</p>
+        <p class="sub" style="margin-top:8px">Kesin tutar denetim bittikten sonra netleşir. Girdi kredisi mahsubu bu tutardan düşülür.</p>
+        <div class="steps">
+          <div class="done">Sezon<br>kapandı</div>
+          <div class="done">Uydu<br>kontrolü</div>
+          <div class="now">Denetim<br>sürüyor</div>
+          <div>Kredi<br>satışı</div>
+          <div>Ödeme</div>
+        </div>
+      </div>
+
+      <div class="sec"><h2>Tarlalarım</h2><button class="more" onclick="go('tarla')">Tümü ›</button></div>
+      <div id="ozetParcels"></div>
+
+      <p class="fine">Panelde gördüğünüz tutarlar sizin tarlanız için hesaplanmış tahminlerdir; ödeme tutarı denetim ve o yılın karbon satış fiyatına göre kesinleşir. Ödenmiş tutarlar dekontla birlikte Belgeler bölümünde durur.</p>
+    </div>
+
+    <!-- ---------- TARLALAR ---------- -->
+    <div class="view" id="v-tarla">
+      <div class="sec"><h2>Tarlalarım</h2><span class="more">4 parsel · 1.240 dönüm</span></div>
+      <div id="allParcels"></div>
+      <div class="card" style="margin-top:14px">
+        <h3 style="margin-bottom:6px">Yeni tarla eklemek</h3>
+        <p class="sub">Programa yeni parsel katmak için mühendisinizle görüşmeniz gerekir; sınır kontrolü ve toprak analizi yapılmadan parsel eklenmiyor.</p>
+        <div class="btn-row"><button class="btn ghost sm" onclick="toast('Talebiniz iletildi. Mühendisiniz 2 iş günü içinde arayacak.')">Parsel ekleme talebi</button></div>
+      </div>
+    </div>
+
+    <!-- ---------- DEFTER ---------- -->
+    <div class="view" id="v-defter">
+      <div class="sec"><h2>Tarla defteri</h2><span class="more" id="defterCount">14 kayıt</span></div>
+      <div class="card" style="border-left:4px solid var(--field);margin-bottom:14px">
+        <p class="sub"><b style="color:var(--ink)">Defter neden önemli:</b> Ödemeniz bu kayıtlara dayanıyor. Denetçi kaydı görmezse o işlem hesaba girmiyor. Her kayıt 20 saniye sürer.</p>
+      </div>
+      <div id="entries"></div>
+    </div>
+
+    <!-- ---------- ÖDEME ---------- -->
+    <div class="view" id="v-odeme">
+      <div class="sec"><h2>Ödemeler</h2></div>
+      <div class="card soil">
+        <p class="sub">Bu sözleşmede bugüne kadar aldığınız</p>
+        <p class="pay-big" style="margin-top:6px">1.054.000 ₺</p>
+        <p class="sub" style="margin-top:8px">2 avans + 1 bakiye ödemesi · kesintiler düşülmüş</p>
+      </div>
+
+      <div class="sec"><h2>Hareketler</h2></div>
+      <div class="card" style="padding:6px 14px">
+        <div class="pl"><span class="d">Eki 24</span><span class="t">Geçiş avansı<small>1. yıl · ekim öncesi</small></span><span class="a in">+301.000 ₺</span></div>
+        <div class="pl"><span class="d">Haz 25</span><span class="t">1. yıl bakiye ödemesi<small>Denetim onayı sonrası</small></span><span class="a in">+451.600 ₺</span></div>
+        <div class="pl"><span class="d">Haz 25</span><span class="t">Girdi kredisi mahsubu<small>Örtü bitkisi tohumu · 620 dönüm</small></span><span class="a out">−108.500 ₺</span></div>
+        <div class="pl"><span class="d">Eki 25</span><span class="t">Geçiş avansı<small>2. yıl · ekim öncesi</small></span><span class="a in">+409.900 ₺</span></div>
+        <div class="pl"><span class="d">Haz 26</span><span class="t">2. yıl bakiye ödemesi<small>Denetim sürüyor · tahmini</small></span><span class="a est">~451.600 ₺</span></div>
+      </div>
+
+      <div class="sec"><h2>Ödemem neye bağlı</h2></div>
+      <div class="card">
+        <div class="pl"><span class="t"><b>Alan</b><small>Programa aldığınız dönüm sayısı</small></span><span class="a">1.240 dönüm</span></div>
+        <div class="pl"><span class="t"><b>Uygulama</b><small>Geçtiğiniz madde sayısı</small></span><span class="a">4 / 6</span></div>
+        <div class="pl"><span class="t"><b>Uyum</b><small>Beyan ile uydunun tutma oranı</small></span><span class="a">%92</span></div>
+        <div class="pl"><span class="t"><b>Fiyat</b><small>1–5. yıl ön satışla sabitlendi</small></span><span class="a">34 € sabit</span></div>
+      </div>
+      <p class="fine">Ödemeniz döviz üzerinden hesaplanır, TL olarak hesabınıza yatar. Sözleşmenizin ilk 5 yılı için fiyat kurumsal alıcıya ön satışla sabitlendi: piyasa fiyatı düşse de bu fiyat uygulanır, yükselirse fark size yansımaz. 6. yıldan sonrası o günün fiyatına göre belirlenir. Parsel 3-1'deki açık uyarı çözülmezse o parselin bu yıllık katkısı hesaptan düşer.</p>
+    </div>
+
+    <!-- ---------- DAHA ---------- -->
+    <div class="view" id="v-daha">
+      <div class="sec"><h2>Belgelerim</h2></div>
+      <button class="row" onclick="toast('Belge indiriliyor…')"><span class="dot ok"></span>
+        <span class="main"><b>Karbon programı sözleşmesi</b><span>12 Eki 2024 · imzalı</span></span><span class="go">›</span></button>
+      <button class="row" onclick="toast('Belge indiriliyor…')"><span class="dot ok"></span>
+        <span class="main"><b>Başlangıç toprak analizi raporu</b><span>4 parsel · 0–30 cm</span></span><span class="go">›</span></button>
+      <button class="row" onclick="toast('Belge indiriliyor…')"><span class="dot ok"></span>
+        <span class="main"><b>1. yıl denetim raporu</b><span>Bağımsız denetim · onaylı</span></span><span class="go">›</span></button>
+      <button class="row" onclick="toast('Belge indiriliyor…')"><span class="dot ok"></span>
+        <span class="main"><b>Ödeme dekontları</b><span>3 dekont</span></span><span class="go">›</span></button>
+
+      <div class="sec"><h2>Destek</h2></div>
+      <button class="row" onclick="toast('Ziraat mühendisiniz Emre Kaya aranıyor…')">
+        <span class="dot ok"></span>
+        <span class="main"><b>Mühendisimi ara</b><span>Emre Kaya · Çumra bölgesi</span></span><span class="go">›</span></button>
+      <button class="row" onclick="toast('Mibzer takvimi açılıyor…')"><span class="dot warn"></span>
+        <span class="main"><b>Mibzer kirala</b><span>Kooperatif havuzu · sıradaki boş gün 18 Eylül</span></span><span class="go">›</span></button>
+      <button class="row" onclick="toast('Girdi kredisi başvurusu açılıyor…')"><span class="dot warn"></span>
+        <span class="main"><b>Girdi kredisi başvur</b><span>Örtü bitkisi tohumu · son gün 15 Ağustos</span></span><span class="go">›</span></button>
+
+      <div class="sec"><h2>Sık sorulanlar</h2></div>
+      <details class="help-q"><summary>Kaydı geç girsem olur mu?</summary>
+        <div class="b">Olur ama gecikme büyürse denetçi kaydı zayıf kabul ediyor. En sağlamı işlemi yaptığınız gün girmek; uydu görüntüsüyle tarihler örtüştüğünde itiraz ihtimali kalmıyor.</div></details>
+      <details class="help-q"><summary>Uydu yanlış görürse ne olur?</summary>
+        <div class="b">Uyarıya itiraz edebilirsiniz. İtiraz ettiğinizde mühendis o parseli inceler, gerekirse sahaya gelir. Uydu tespiti tek başına ödemeyi kesmiyor; karar denetim aşamasında veriliyor.</div></details>
+      <details class="help-q"><summary>Bu yıl bir tarlada pulluk kullanmam gerekti.</summary>
+        <div class="b">Gizlemek yerine deftere yazın ve sebebini not düşün. O parselin o yıllık katkısı düşer ama sözleşmeniz bozulmaz. Gizlenen işlem uydudan çıktığında sonuç daha ağır oluyor.</div></details>
+      <details class="help-q"><summary>Tarlamı satarsam ne olur?</summary>
+        <div class="b">Satabilirsiniz. Taahhüdün yeni sahip tarafından sürdürülmesi gerekir; sürdürülmezse alınan avansın kalan kısmı için sözleşmedeki iade maddesi işler. Satış öncesi mühendisinizi arayın.</div></details>
+
+      <div class="sec"><h2>Hesap</h2></div>
+      <button class="row" onclick="toast('Bilgi güncelleme ekranı açılıyor…')"><span class="main"><b>Telefon ve banka bilgilerim</b><span>Ödemeler bu hesaba yatıyor</span></span><span class="go">›</span></button>
+      <button class="row" onclick="toast('Kâğıt defter talebi alındı.')"><span class="main"><b>Kâğıt defter istiyorum</b><span>Telefonla kayıt tutamıyorsanız</span></span><span class="go">›</span></button>
+
+      <p class="fine">Topracon çiftçi paneli · prototip. Tutarlar örnektir. Sözleşmeniz ve dekontlarınız bağlayıcı olan belgelerdir.</p>
+    </div>
+  </div>
+
+  <!-- ===== yüzen kayıt butonu ===== -->
+  <div class="fab" id="fab">
+    <button class="btn" onclick="openForm()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FBF9F3" stroke-width="2.2"
+        stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+      Tarla işlemi kaydet
+    </button>
+  </div>
+
+  <!-- ===== alt gezinme ===== -->
+  <nav class="nav" id="nav"></nav>
+
+  <!-- ===== çekmece: parsel detayı ===== -->
+  <div class="sheet" id="sheetParcel">
+    <div class="veil" onclick="closeSheet('sheetParcel')"></div>
+    <div class="panel">
+      <div class="grab"></div>
+      <div class="sheet-h"><h3 id="pTitle">Parsel</h3>
+        <button onclick="closeSheet('sheetParcel')" aria-label="Kapat">✕</button></div>
+      <div id="pBody"></div>
+    </div>
+  </div>
+
+  <!-- ===== çekmece: yeni kayıt ===== -->
+  <div class="sheet" id="sheetForm">
+    <div class="veil" onclick="closeSheet('sheetForm')"></div>
+    <div class="panel">
+      <div class="grab"></div>
+      <div class="sheet-h"><h3>Tarla işlemi kaydet</h3>
+        <button onclick="closeSheet('sheetForm')" aria-label="Kapat">✕</button></div>
+
+      <div class="field"><label class="f" for="fP">Hangi parsel</label>
+        <select id="fP"></select></div>
+
+      <div class="field"><label class="f">Ne yaptınız</label>
+        <div class="pick" id="fType"></div></div>
+
+      <div class="field"><label class="f" for="fD">Tarih</label>
+        <input type="date" id="fD" value="2026-09-04"></div>
+
+      <div class="field" id="fExtra"></div>
+
+      <div class="field"><label class="f" for="fA">İşlenen alan (dönüm)</label>
+        <input type="number" id="fA" inputmode="numeric" value="420"></div>
+
+      <div class="field"><button class="photo" onclick="toast('Kamera açılıyor… (prototipte devre dışı)')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"
+          stroke-linecap="round"><path d="M3 8a2 2 0 0 1 2-2h2l1.5-2h7L17 6h2a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><circle cx="12" cy="13" r="3.5"/></svg>
+        Fotoğraf ekle <span style="font-weight:400;font-size:.85rem">(isteğe bağlı)</span></button></div>
+
+      <div class="field"><label class="f" for="fN">Not</label>
+        <textarea id="fN" placeholder="Örn. mibzer kooperatiften kiralandı, ikinci geçiş yapılmadı"></textarea></div>
+
+      <div class="btn-row">
+        <button class="btn ghost" onclick="closeSheet('sheetForm')">Vazgeç</button>
+        <button class="btn" onclick="saveEntry()">Kaydet</button>
+      </div>
+      <p class="fine">Kaydınız uydu görüntüsüyle karşılaştırılır. Uyuşmayan kayıtlar için mühendisiniz sizi arar.</p>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+</div>
+</div>
+
+<script>
+/* ================= veri ================= */
+var PARCELS=[
+ {id:"12-4",ad:"Parsel 12-4",yer:"Çumra",don:420,urun:"Buğday – nohut",
+  taahhut:["Doğrudan ekim","Örtü bitkisi","Anız tarlada"],durum:"ok",
+  uydu:"29 Ağu 2026",kayit:6,ndvi:[.18,.16,.22,.41,.68,.79,.72,.38,.19,.15,.31,.44],gecen:[.17,.15,.20,.38,.66,.77,.70,.33,.14,.11,.12,.13],not:"Beyanlarınız uydu görüntüleriyle örtüşüyor. Bu parselde yapılacak bir şey yok."},
+ {id:"12-7",ad:"Parsel 12-7",yer:"Çumra",don:260,urun:"Buğday – arpa",
+  taahhut:["Doğrudan ekim","Anız tarlada"],durum:"warn",
+  uydu:"29 Ağu 2026",kayit:3,ndvi:[.16,.14,.19,.36,.61,.71,.65,.31,.22,.28,.34,.40],gecen:[.15,.14,.18,.35,.60,.70,.64,.29,.13,.10,.11,.12],not:"14 Kasım görüntüsünde örtü bitkisi çıkışı görüldü ama defterde kaydı yok. Kaydı girmezseniz bu parselin örtü bitkisi katkısı hesaptan düşer."},
+ {id:"3-1", ad:"Parsel 3-1", yer:"Ayrancı",don:380,urun:"Buğday – nohut",
+  taahhut:["Doğrudan ekim","Baklagil rotasyonu"],durum:"bad",
+  uydu:"27 Ağu 2026",kayit:4,ndvi:[.14,.12,.17,.33,.57,.66,.60,.26,.11,.09,.10,.12],gecen:[.14,.13,.18,.34,.58,.67,.61,.27,.12,.10,.11,.12],not:"22 Mart görüntüsünde derin toprak işleme izi var; taahhüdünüzde doğrudan ekim yazıyor. Açıklama eklemezseniz bu parselin bu yıllık katkısı hesaptan düşer."},
+ {id:"8-2", ad:"Parsel 8-2", yer:"Ortaköy",don:180,urun:"Ayçiçeği – buğday",
+  taahhut:["Şeritsel ekim","Anız tarlada","Ölçülü gübre"],durum:"ok",
+  uydu:"28 Ağu 2026",kayit:1,ndvi:[.15,.13,.18,.39,.64,.74,.69,.35,.17,.14,.26,.38],gecen:[.15,.13,.17,.36,.62,.72,.66,.30,.13,.10,.11,.12],not:"Nisan başındaki tek yüzeysel geçiş taahhüdünüze uygun."}
+];
+var TYPES=["Ekim","Örtü bitkisi ekimi","Toprak işleme","Gübreleme","İlaçlama","Hasat","Anız yönetimi","Otlatma"];
+var EXTRA={
+ "Ekim":["Tür / çeşit","text","Buğday"],
+ "Örtü bitkisi ekimi":["Karışım","text","Fiğ + yulaf"],
+ "Toprak işleme":["Alet","select","Doğrudan ekim mibzeri|Şeritsel|Diskaro|Pulluk"],
+ "Gübreleme":["Ürün ve miktar","text","AS %21 · 11 kg/dönüm"],
+ "İlaçlama":["Ürün ve doz","text","Glifosat · 200 ml/dönüm"],
+ "Hasat":["Verim (kg/dönüm)","number","410"],
+ "Anız yönetimi":["Yöntem","select","Tarlada bırakıldı|Balyalandı|Yakıldı"],
+ "Otlatma":["Hayvan sayısı","number","42"]
+};
+var ENTRIES=[
+ {d:"2026-07-08",p:"12-4",t:"Hasat",x:"Buğday 410 kg/dönüm, anız tarlada",s:"ok"},
+ {d:"2026-04-02",p:"8-2", t:"Ekim",x:"Ayçiçeği, şeritsel toprak işleme",s:"ok"},
+ {d:"2026-03-22",p:"3-1", t:"Toprak işleme",x:"Kayıt yok — uydu tespiti",s:"bad"},
+ {d:"2026-02-20",p:"12-4",t:"Gübreleme",x:"AS %21, 11 kg/dönüm (geçen yıl 15)",s:"ok"},
+ {d:"2025-10-02",p:"3-1", t:"Ekim",x:"Buğday, doğrudan ekim mibzeri",s:"ok"},
+ {d:"2025-09-18",p:"12-4",t:"Örtü bitkisi ekimi",x:"Fiğ + yulaf, 4,5 kg/dönüm",s:"ok"}
+];
+var NAV=[
+ ["ozet","Özet",'<path d="M4 11 12 4l8 7"/><path d="M6 10v10h12V10"/>'],
+ ["tarla","Tarlalar",'<path d="M3 8h18"/><path d="M3 8v11h18V8"/><path d="M9 8v11"/><path d="M15 8v11"/><path d="M3 8 12 3l9 5"/>'],
+ ["defter","Defter",'<path d="M6 3h11a2 2 0 0 1 2 2v16H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M9 8h7M9 12h7M9 16h4"/>'],
+ ["odeme","Ödeme",'<path d="M3 7h18v11H3z"/><path d="M3 11h18"/><path d="M7 15h3"/>'],
+ ["daha","Daha",'<circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/>']
+];
+var offline=false, queue=0, selType=TYPES[0];
+
+/* ================= yardımcılar ================= */
+function el(i){return document.getElementById(i)}
+function n0(x){return Math.round(x).toLocaleString("tr-TR")}
+function toast(m){var t=el("toast");t.textContent=m;t.classList.add("on");
+  clearTimeout(t._x);t._x=setTimeout(function(){t.classList.remove("on")},2800)}
+function tagOf(s){return s==="ok"?'<span class="tag ok">uyumlu</span>':
+  s==="warn"?'<span class="tag warn">eksik kayıt</span>':
+  s==="bad"?'<span class="tag bad">çelişki</span>':'<span class="tag wait">bekliyor</span>'}
+function dTR(s){var a=s.split("-"),m=["Oca","Şub","Mar","Nis","May","Haz","Tem","Ağu","Eyl","Eki","Kas","Ara"];
+  return a[2]+" "+m[+a[1]-1]}
+function ayTR(s){var a=s.split("-"),m=["Ocak","Şubat","Mart","Nisan","Mayıs","Haziran","Temmuz","Ağustos","Eylül","Ekim","Kasım","Aralık"];
+  return m[+a[1]-1]+" "+a[0]}
+
+/* ================= gezinme ================= */
+(function(){
+  el("nav").innerHTML=NAV.map(function(n,i){
+    var badge=n[0]==="tarla"?'<span class="badge">2</span>':"";
+    return '<button data-v="'+n[0]+'" onclick="go(\''+n[0]+'\')" aria-current="'+(i===0)+'">'
+      +'<svg viewBox="0 0 24 24">'+n[2]+'</svg>'+n[1]+badge+'</button>';
+  }).join("");
+})();
+function go(v){
+  NAV.forEach(function(n){el("v-"+n[0]).classList.toggle("on",n[0]===v)});
+  Array.prototype.forEach.call(el("nav").children,function(b){
+    b.setAttribute("aria-current",String(b.dataset.v===v))});
+  el("fab").style.display=(v==="ozet"||v==="defter")?"block":"none";
+  el("body").scrollTop=0;
+}
+
+/* ================= parseller ================= */
+function parcelRow(p){
+  return '<button class="row" onclick="openParcel(\''+p.id+'\')">'
+    +'<span class="dot '+p.durum+'"></span>'
+    +'<span class="main"><b>'+p.ad+'</b><span>'+p.yer+' · '+n0(p.don)+' dönüm · '+p.urun+'</span></span>'
+    +'<span class="go">›</span></button>';
+}
+el("ozetParcels").innerHTML=PARCELS.slice(0,2).map(parcelRow).join("");
+el("allParcels").innerHTML=PARCELS.map(parcelRow).join("");
+
+function openParcel(id){
+  var p=PARCELS.filter(function(x){return x.id===id})[0];
+  el("pTitle").textContent=p.ad+" · "+p.yer;
+  var eylem="";
+  if(p.durum==="bad"){
+    eylem='<div class="btn-row">'
+      +'<button class="btn wheat" onclick="closeSheet(\'sheetParcel\');openForm(\''+p.id+' · '+p.yer+'\',\'Toprak işleme\')">Açıklama ekle</button>'
+      +'<button class="btn ghost" onclick="toast(\'İtirazınız alındı. Mühendisiniz parseli inceleyip sizi arayacak.\');closeSheet(\'sheetParcel\')">İtiraz et</button></div>';
+  } else if(p.durum==="warn"){
+    eylem='<div class="btn-row">'
+      +'<button class="btn wheat" onclick="closeSheet(\'sheetParcel\');openForm(\''+p.id+' · '+p.yer+'\',\'Örtü bitkisi ekimi\')">Eksik kaydı gir</button></div>';
+  }
+  el("pBody").innerHTML=
+     '<div style="margin-bottom:12px">'+tagOf(p.durum)+'</div>'
+    +'<div class="card"><p class="sub">'+p.not+'</p>'+eylem+'</div>'
+    +'<div class="card" style="padding:6px 14px">'
+      +'<div class="pl"><span class="t">Alan</span><span class="a">'+n0(p.don)+' dönüm</span></div>'
+      +'<div class="pl"><span class="t">Rotasyon</span><span class="a">'+p.urun+'</span></div>'
+      +'<div class="pl"><span class="t">Bu sezon kaydı</span><span class="a">'+p.kayit+' kayıt</span></div>'
+      +'<div class="pl"><span class="t">Son uydu görüntüsü</span><span class="a">'+p.uydu+'</span></div>'
+    +'</div>'
+    +ndviCard(p)
+    +'<div class="card"><h4 style="margin-bottom:4px">Bu parseldeki taahhüdünüz</h4>'
+      +'<div class="chips">'+p.taahhut.map(function(t){return '<span class="chip">'+t+'</span>'}).join("")+'</div></div>'
+    +'<div class="btn-row"><button class="btn soil" onclick="closeSheet(\'sheetParcel\');openForm(\''+p.id+' · '+p.yer+'\')">Bu parsele kayıt gir</button></div>';
+  el("sheetParcel").classList.add("on");
+}
+function closeSheet(id){el(id).classList.remove("on")}
+
+/* uydunun gördüğü yeşillik — çiftçiye kanıt olarak */
+var AYLAR=["E","E","K","A","O","Ş","M","N","M","H","T","A"];
+function ndviCard(p){
+  if(!p.ndvi) return "";
+  var W=300,H=92,pl=6,pb=15;
+  function px(i){return pl+i*(W-pl*2)/11}
+  function py(v){return H-pb-v*(H-pb-8)}
+  var s='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;height:auto" aria-label="Uydunun gördüğü yeşillik">';
+  s+='<polyline fill="none" stroke="rgba(28,38,32,.28)" stroke-width="1.6" stroke-dasharray="3 3" points="'
+     +p.gecen.map(function(v,i){return px(i)+","+py(v)}).join(" ")+'"/>';
+  s+='<polyline fill="none" stroke="#607A55" stroke-width="2.6" points="'
+     +p.ndvi.map(function(v,i){return px(i)+","+py(v)}).join(" ")+'"/>';
+  p.ndvi.forEach(function(v,i){s+='<circle cx="'+px(i)+'" cy="'+py(v)+'" r="2.4" fill="#607A55"/>'});
+  AYLAR.forEach(function(m,i){s+='<text x="'+px(i)+'" y="'+(H-3)+'" font-size="8" fill="rgba(28,38,32,.45)" '
+     +'text-anchor="middle" font-family="IBM Plex Mono, monospace">'+m+'</text>'});
+  s+='</svg>';
+  return '<div class="card"><h4 style="margin-bottom:3px">Uydunun gördüğü yeşillik</h4>'
+    +'<p class="sub" style="margin-bottom:6px">Yeşil çizgi bu sezon, gri çizgi geçen sezon. '
+    +'Kış aylarındaki fark örtü bitkisinin uydudan görünen izidir.</p>'+s+'</div>';
+}
+
+/* ================= defter ================= */
+function drawEntries(){
+  var byMonth={},order=[];
+  ENTRIES.slice().sort(function(a,b){return a.d<b.d?1:-1}).forEach(function(e){
+    var k=e.d.slice(0,7);
+    if(!byMonth[k]){byMonth[k]=[];order.push(k)}
+    byMonth[k].push(e);
+  });
+  el("defterCount").textContent=ENTRIES.length+" kayıt";
+  el("entries").innerHTML=order.map(function(k){
+    return '<div class="daygroup">'+ayTR(k+"-01")+'</div><div class="card" style="padding:4px 14px">'
+      +byMonth[k].map(function(e){
+        return '<div class="entry"><span class="when">'+dTR(e.d)+'</span>'
+          +'<span class="main"><b>'+e.t+'</b><p>'+e.p+' · '+e.x+'</p></span>'
+          +'<span style="flex:none;padding-top:2px">'+tagOf(e.s)+'</span></div>';
+      }).join("")+'</div>';
+  }).join("");
+}
+
+/* ================= kayıt formu ================= */
+(function(){
+  el("fP").innerHTML=PARCELS.map(function(p){
+    return '<option>'+p.id+' · '+p.yer+'</option>'}).join("");
+  el("fType").innerHTML=TYPES.map(function(t,i){
+    return '<label><input type="radio" name="ft" value="'+t+'" '+(i===0?"checked":"")
+      +' onchange="setType(this.value)">'+t+'</label>'}).join("");
+  setType(TYPES[0]);
+})();
+function setType(t){
+  selType=t;
+  var s=EXTRA[t];
+  if(!s){el("fExtra").innerHTML="";return}
+  el("fExtra").innerHTML='<label class="f" for="fX">'+s[0]+'</label>'
+    +(s[1]==="select"
+      ? '<select id="fX">'+s[2].split("|").map(function(o){return "<option>"+o+"</option>"}).join("")+'</select>'
+      : '<input type="'+s[1]+'" id="fX" value="'+s[2]+'">');
+}
+function openForm(parsel,tip){
+  if(parsel){
+    Array.prototype.forEach.call(el("fP").options,function(o){if(o.text===parsel)el("fP").value=o.value});
+  }
+  if(tip){
+    var r=document.querySelector('input[name=ft][value="'+tip+'"]');
+    if(r){r.checked=true;setType(tip)}
+  }
+  el("sheetForm").classList.add("on");
+}
+function saveEntry(){
+  var p=el("fP").value.split(" ")[0];
+  var x=el("fX")?el("fX").value:"";
+  var note=el("fN").value.trim();
+  ENTRIES.push({d:el("fD").value,p:p,t:selType,
+    x:[x,note].filter(Boolean).join(" — ")||"—", s:offline?"wait":"wait"});
+  el("fN").value="";
+  drawEntries();
+  closeSheet("sheetForm");
+  go("defter");
+  if(offline){queue++;el("qN").textContent=queue;el("banner").classList.add("on");
+    toast("Kayıt telefonunuza kaydedildi. Sinyal gelince gönderilecek.");}
+  else toast("Kayıt gönderildi. Uydu kontrolü sonraki geçişte yapılacak.");
+}
+
+/* ================= sinyal yok modu ================= */
+function toggleOffline(){
+  offline=!offline;
+  el("offBtn").setAttribute("aria-pressed",String(offline));
+  if(!offline&&queue>0){
+    toast(queue+" kayıt gönderildi.");queue=0;el("banner").classList.remove("on");
+  } else if(offline){
+    toast("Sinyal yok modu açık. Kayıtlar telefonda birikir, sonra gönderilir.");
+  }
+}
+
+drawEntries();
+</script>
+</body>
+</html>
